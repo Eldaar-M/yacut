@@ -1,39 +1,40 @@
-from flask import flash, redirect, render_template, url_for
+from flask import abort, flash, redirect, render_template, url_for
 
-from . import app, db
+from settings import REDIRECT_FUNCTION_NAME
+from . import app
 from .forms import URLMapForm
 from .models import URLMap
 
 NAME_EXSISTS_PHRASE = 'Предложенный вариант короткой ссылки уже существует.'
-LINK_IS_READY_PHARASE = 'Ваша новая ссылка готова:'
+ALREADY_EXISTS = 'Предложенный вариант короткой ссылки уже существует.'
+INVALID_NAME = 'Указано недопустимое имя для короткой ссылки'
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
     form = URLMapForm()
-    if form.validate_on_submit():
-        short_url = form.custom_id.data
-        if URLMap.query.filter_by(short=short_url).first():
-            flash(NAME_EXSISTS_PHRASE.format(short_link=short_url))
-            return render_template('index.html', form=form)
-        if not short_url:
-            short_url = URLMap.get_unique_short_id()
-        url_map = URLMap(
-            original=form.original_link.data,
-            short=short_url
+    if not form.validate_on_submit():
+        return render_template('index.html', form=form)
+    short = form.custom_id.data
+    try:
+        url_map = URLMap.create_url(form.original_link.data, short)
+    except ValueError as error:
+        flash(error)
+        return render_template('index.html', form=form)
+    return render_template(
+        'index.html',
+        form=form,
+        url=url_for(
+            REDIRECT_FUNCTION_NAME,
+            short=url_map.short,
+            _external=True
         )
-        db.session.add(url_map)
-        db.session.commit()
-        flash(LINK_IS_READY_PHARASE)
-        return render_template(
-            'index.html',
-            form=form,
-            url=url_for('redirect_view', short_id=short_url, _external=True)
-        )
-    return render_template('index.html', form=form)
+    )
 
 
-@app.route('/<short_id>', methods=['GET'])
-def redirect_view(short_id):
-    link = URLMap.query.filter_by(short=short_id).first_or_404()
-    return redirect(link.original)
+@app.route('/<string:short>', methods=['GET'])
+def redirect_view(short):
+    url_map = URLMap.get_url(short)
+    if url_map:
+        return redirect(url_map.original)
+    abort(404)
