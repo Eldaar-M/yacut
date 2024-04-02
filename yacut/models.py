@@ -48,7 +48,10 @@ class URLMap(db.Model):
 
     @staticmethod
     def url_validate(short):
-        if (len(short) > MAX_SHORT_SIZE or not re.match(URL_SYMBOLS_REGEXP, short)):
+        if (
+            (len(short) > MAX_SHORT_SIZE or not
+             re.match(URL_SYMBOLS_REGEXP, short))
+        ):
             raise ValueError(INVALID_NAME)
         if URLMap.get_url(short):
             raise ValueError(ALREADY_EXISTS)
