@@ -1,8 +1,12 @@
 import os
+import string
 
 GENERATION_NUMBER = 6
-URL_SYMBOLS_REGEXP = '^[A-Za-z0-9]*$'
-MAX_URL_SIZE = 16
+ALLOWED_SYMBOLS = string.ascii_letters + string.digits
+URL_SYMBOLS_REGEXP = f'^[{ALLOWED_SYMBOLS}]*$'
+MAX_SHORT_SIZE = 16
+MAX_ORIGINAL_SIZE = 2048
+REDIRECT_FUNCTION_NAME = 'redirect_view'
 
 
 class Config:
