@@ -13,7 +13,7 @@ URL_REQUIERD_FIELD = '"url" является обязательным полем
 
 @app.route('/api/id/<string:short>/', methods=['GET'])
 def get_url(short):
-    url_map = URLMap.get_url(short)
+    url_map = URLMap.get(short)
     if not url_map:
         raise InvalidAPIUsage(ID_NOT_FOUND, HTTPStatus.NOT_FOUND)
     return jsonify({'url': url_map.original}), HTTPStatus.OK
@@ -28,7 +28,6 @@ def add_url():
         raise InvalidAPIUsage(URL_REQUIERD_FIELD)
     short = data.get('custom_id', None)
     try:
-        url_map = URLMap.create_url(data['url'], short)
+        return jsonify(URLMap.create(data['url'], short).to_dict()), HTTPStatus.CREATED
     except ValueError as error:
         raise InvalidAPIUsage(f'{error}')
-    return jsonify(url_map.to_dict()), HTTPStatus.CREATED

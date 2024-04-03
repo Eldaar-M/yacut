@@ -2,12 +2,16 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, URLField
 from wtforms.validators import DataRequired, Length, Optional, Regexp
 
-from settings import MAX_ORIGINAL_SIZE, MAX_SHORT_SIZE, URL_SYMBOLS_REGEXP
+from settings import MAX_ORIGINAL_SIZE, MAX_SHORT_SIZE, SHORT_SYMBOLS_REGEXP
 
 ADD_ORIGINAL_PHRASE = 'Добавьте вашу длинную ссылку'
 REQUIED_FIELD_PHRASE = 'Обязательное поле'
 ADD_SHORT_PHRASE = 'Введите ваш вариант короткой ссылки'
 CREATE_PHRASE = 'Создать'
+REGEXP_PHRASE = (
+    'Можно использовать только большие и маленькие'
+    'латинские буквы, цифры в диапазоне от 0 до 9.'
+)
 
 
 class URLMapForm(FlaskForm):
@@ -24,11 +28,9 @@ class URLMapForm(FlaskForm):
             Length(max=MAX_SHORT_SIZE),
             Optional(),
             Regexp(
-                URL_SYMBOLS_REGEXP,
-                message=(
-                    'Можно использовать только большие и маленькие'
-                    'латинские буквы, цифры в диапазоне от 0 до 9'
-                ))
+                SHORT_SYMBOLS_REGEXP,
+                message=(REGEXP_PHRASE)
+            )
         ]
     )
     submit = SubmitField(CREATE_PHRASE)

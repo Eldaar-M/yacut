@@ -7,15 +7,17 @@ from flask import url_for
 from yacut import db
 from settings import (
     ALLOWED_SYMBOLS,
-    GENERATION_NUMBER,
+    SHORT_SIZE,
     MAX_SHORT_SIZE,
     MAX_ORIGINAL_SIZE,
+    NUMBER_OF_REPETITIONS,
     REDIRECT_FUNCTION_NAME,
-    URL_SYMBOLS_REGEXP
+    SHORT_SYMBOLS_REGEXP
 )
 
 
 ALREADY_EXISTS = 'Предложенный вариант короткой ссылки уже существует.'
+FAILED_GENERATE = 'Автоматически сгенерировать короткую ссылку не удалось.'
 INVALID_NAME = 'Указано недопустимое имя для короткой ссылки'
 
 
@@ -34,38 +36,34 @@ class URLMap(db.Model):
         )
 
     @staticmethod
-    def get_unique_short_id():
-        unique_short = ''.join(
-            random.choices(
-                ALLOWED_SYMBOLS,
-                k=GENERATION_NUMBER
+    def get_unique_short():
+        for i in range(NUMBER_OF_REPETITIONS):
+            short = ''.join(
+                random.choices(
+                    ALLOWED_SYMBOLS,
+                    k=SHORT_SIZE
+                )
             )
-        )
-        if not URLMap.get_url(unique_short):
-            return unique_short
-        else:
-            URLMap.get_unique_short_id()
+            if not URLMap.get(short):
+                return short
+        raise ValueError(FAILED_GENERATE)
 
     @staticmethod
-    def url_validate(short):
-        if (
-            (len(short) > MAX_SHORT_SIZE or not
-             re.match(URL_SYMBOLS_REGEXP, short))
-        ):
-            raise ValueError(INVALID_NAME)
-        if URLMap.get_url(short):
-            raise ValueError(ALREADY_EXISTS)
-
-    @staticmethod
-    def get_url(short):
+    def get(short):
         return URLMap.query.filter_by(short=short).first()
 
     @staticmethod
-    def create_url(original, short):
+    def create(original, short):
         if short:
-            URLMap.url_validate(short)
+            if (
+                (len(short) > MAX_SHORT_SIZE or not
+                 re.match(SHORT_SYMBOLS_REGEXP, short))
+            ):
+                raise ValueError(INVALID_NAME)
+            if URLMap.get(short):
+                raise ValueError(ALREADY_EXISTS)
         if short is None or short == '':
-            short = URLMap.get_unique_short_id()
+            short = URLMap.get_unique_short()
         url = URLMap(
             original=original,
             short=short
