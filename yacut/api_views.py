@@ -3,7 +3,7 @@ from http import HTTPStatus
 from flask import jsonify, request
 
 from . import app
-from .error_handlers import InvalidAPIUsage
+from .error_handlers import GenerationError, InvalidAPIUsage
 from .models import URLMap
 
 ID_NOT_FOUND = 'Указанный id не найден'
@@ -26,10 +26,10 @@ def add_url():
         raise InvalidAPIUsage(REQUEST_BODY_MISSING)
     if 'url' not in data:
         raise InvalidAPIUsage(URL_REQUIERD_FIELD)
-    short = data.get('custom_id', None)
     try:
         return jsonify(
-            URLMap.create(data['url'], short).to_dict()
+            URLMap.create(data['url'],
+                          data.get('custom_id')).to_dict()
         ), HTTPStatus.CREATED
-    except ValueError as error:
+    except (ValueError, GenerationError) as error:
         raise InvalidAPIUsage(f'{error}')

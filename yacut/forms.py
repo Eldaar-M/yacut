@@ -10,7 +10,7 @@ ADD_SHORT_PHRASE = 'Введите ваш вариант короткой ссы
 CREATE_PHRASE = 'Создать'
 REGEXP_PHRASE = (
     'Можно использовать только большие и маленькие'
-    'латинские буквы, цифры в диапазоне от 0 до 9.'
+    ' латинские буквы, цифры в диапазоне от 0 до 9.'
 )
 
 
@@ -27,10 +27,7 @@ class URLMapForm(FlaskForm):
         validators=[
             Length(max=MAX_SHORT_SIZE),
             Optional(),
-            Regexp(
-                SHORT_SYMBOLS_REGEXP,
-                message=(REGEXP_PHRASE)
-            )
+            Regexp(SHORT_SYMBOLS_REGEXP, message=REGEXP_PHRASE)
         ]
     )
     submit = SubmitField(CREATE_PHRASE)
