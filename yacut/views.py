@@ -11,7 +11,6 @@ from .models import URLMap
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
     form = URLMapForm()
-    print(type(form.custom_id.data))
     if not form.validate_on_submit():
         return render_template('index.html', form=form)
     try:
@@ -22,7 +21,7 @@ def index_view():
                 REDIRECT_FUNCTION_NAME,
                 short=URLMap.create(form.original_link.data,
                                     form.custom_id.data,
-                                    form=True).short,
+                                    validate=False).short,
                 _external=True
             )
         )

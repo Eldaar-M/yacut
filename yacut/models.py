@@ -54,12 +54,8 @@ class URLMap(db.Model):
         return URLMap.query.filter_by(short=short).first()
 
     @staticmethod
-    def create(original, short, form=False):
-        if not short:
-            short = URLMap.get_unique_short()
-        if URLMap.get(short):
-            raise ValueError(ALREADY_EXISTS)
-        if not form:
+    def create(original, short, validate=True):
+        if short and validate:
             if (
                 (len(short) > MAX_SHORT_SIZE or not
                  re.match(SHORT_SYMBOLS_REGEXP, short))
@@ -67,6 +63,11 @@ class URLMap(db.Model):
                 raise ValueError(INVALID_SHORT_NAME)
             if len(original) > MAX_ORIGINAL_SIZE:
                 raise ValueError(INVALID_ORIGINAL_SIZE)
+        if not short:
+            short = URLMap.get_unique_short()
+        else:
+            if URLMap.get(short):
+                raise ValueError(ALREADY_EXISTS)
         url_map = URLMap(
             original=original,
             short=short
