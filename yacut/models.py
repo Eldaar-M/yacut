@@ -55,12 +55,13 @@ class URLMap(db.Model):
 
     @staticmethod
     def create(original, short, validate=True):
-        if short and validate:
-            if (
-                (len(short) > MAX_SHORT_SIZE or not
-                 re.match(SHORT_SYMBOLS_REGEXP, short))
-            ):
-                raise ValueError(INVALID_SHORT_NAME)
+        if validate:
+            if short:
+                if (
+                    (len(short) > MAX_SHORT_SIZE or not
+                     re.match(SHORT_SYMBOLS_REGEXP, short))
+                ):
+                    raise ValueError(INVALID_SHORT_NAME)
             if len(original) > MAX_ORIGINAL_SIZE:
                 raise ValueError(INVALID_ORIGINAL_SIZE)
         if not short:
